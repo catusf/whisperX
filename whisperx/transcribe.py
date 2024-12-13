@@ -15,6 +15,45 @@ from .utils import (LANGUAGES, TO_LANGUAGE_CODE, get_writer, optional_float,
 
 import time
 
+import platform
+
+
+def is_windows():
+    return platform.system() == 'Windows'
+  
+def get_media_metadata(input_file):
+
+    if is_windows():
+        ff_path = os.path.join(".", "bin", "ffprobe")
+    else:
+        ff_path = "ffprobe"
+
+    command = [
+        ff_path,
+        "-i",
+        input_file,
+        "-v",
+        "quiet",
+        "-print_format",
+        "json",
+        "-show_format",
+        "-show_streams",
+        "-hide_banner",
+    ]
+
+    # command.extend(
+    #     "-v quiet -print_format json -show_format -show_streams -hide_banner".split(" ")
+    # )
+
+    metadata = subprocess.check_output(command)
+
+    json_meta = json.loads(metadata)
+
+    return json_meta
+
+def determine_media_length(json_meta):
+    return float(json_meta["format"]["duration"])
+  
 class Timer:
     """
     A Timer class to measure elapsed time with start, stop, and display functionalities.
@@ -222,12 +261,15 @@ def cli():
     timer = Timer()
   
     for audio_path in args.pop("audio"):
-        timer.start(f"Start transcribing {audio_path}")
+        timer.start(f"Starting transcription {audio_path}")
         audio = load_audio(audio_path)
-        # >> VAD & ASR
-        print(">>Performing transcription...")
+        media_length = determine_media_length(get_media_metadata(audio_path))
+        # print(">>Performing transcription...")
         result = model.transcribe(audio, batch_size=batch_size, chunk_size=chunk_size, print_progress=print_progress)
-        timer.stop(f"Ended transcribing {audio_path}")
+        timer.stop(f"Ended transcription {audio_path}")
+        
+        print(f"*** Speedup {media_length/timer.elapsed_time:.1f}x")
+
         results.append((result, audio_path))
 
     # Unload Whisper and VAD
