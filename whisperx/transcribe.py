@@ -29,7 +29,7 @@ class Timer:
             print(message)
         self.start_time = time.time()
         self.end_time = None
-        print("Timer started.")
+        # print("Timer started.")
 
     def stop(self, message=""):
         """Stop the timer."""
@@ -37,7 +37,7 @@ class Timer:
             raise ValueError("Timer has not been started.")
         self.end_time = time.time()
 
-        display_elapsed(message)
+        self.display_elapsed(message)
 
     def elapsed_time(self):
         """Calculate and return the elapsed time in minutes, seconds, and milliseconds."""
