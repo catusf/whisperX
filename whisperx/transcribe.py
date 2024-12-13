@@ -13,6 +13,55 @@ from .diarize import DiarizationPipeline, assign_word_speakers
 from .utils import (LANGUAGES, TO_LANGUAGE_CODE, get_writer, optional_float,
                     optional_int, str2bool)
 
+import time
+
+class Timer:
+    """
+    A Timer class to measure elapsed time with start, stop, and display functionalities.
+    """
+    def __init__(self):
+        self.start_time = None
+        self.end_time = None
+
+    def start(self, message=""):
+        """Start the timer."""
+        if message:
+            print(message)
+        self.start_time = time.time()
+        self.end_time = None
+        print("Timer started.")
+
+    def stop(self, message=""):
+        """Stop the timer."""
+        if self.start_time is None:
+            raise ValueError("Timer has not been started.")
+        self.end_time = time.time()
+
+        display_elapsed(message)
+
+    def elapsed_time(self):
+        """Calculate and return the elapsed time in minutes, seconds, and milliseconds."""
+        if self.start_time is None:
+            raise ValueError("Timer has not been started.")
+        if self.end_time is None:
+            raise ValueError("Timer has not been stopped.")
+
+        elapsed_time = self.end_time - self.start_time
+        minutes = int(elapsed_time // 60)
+        seconds = int(elapsed_time % 60)
+        milliseconds = int((elapsed_time * 1000) % 1000)
+
+        return {
+            'minutes': minutes,
+            'seconds': seconds,
+            'milliseconds': milliseconds
+        }
+
+    def display_elapsed(self, message):
+        """Display the elapsed time."""
+        elapsed = self.elapsed_time()
+        print(f"{message} {elapsed['minutes']}:{elapsed['seconds']}.{elapsed['milliseconds']}s")
+
 
 def cli():
     # fmt: off
@@ -168,12 +217,16 @@ def cli():
     tmp_results = []
     # model = load_model(model_name, device=device, download_root=model_dir)
     model = load_model(model_name, device=device, device_index=device_index, download_root=model_dir, compute_type=compute_type, language=args['language'], asr_options=asr_options, vad_options={"vad_onset": vad_onset, "vad_offset": vad_offset}, task=task, threads=faster_whisper_threads)
-
+    
+    timer = Timer()
+  
     for audio_path in args.pop("audio"):
+        timer.start(f"Start transcribing {audio_path}")
         audio = load_audio(audio_path)
         # >> VAD & ASR
         print(">>Performing transcription...")
         result = model.transcribe(audio, batch_size=batch_size, chunk_size=chunk_size, print_progress=print_progress)
+        timer.stop(f"Ended transcribing {audio_path}")
         results.append((result, audio_path))
 
     # Unload Whisper and VAD
