@@ -87,9 +87,9 @@ class Timer:
         if self.end_time is None:
             raise ValueError("Timer has not been stopped.")
 
-        minutes = int(elapsed_time // 60)
-        seconds = int(elapsed_time % 60)
-        milliseconds = int((elapsed_time * 1000) % 1000)
+        minutes = int(self.elapsed_time // 60)
+        seconds = int(self.elapsed_time % 60)
+        milliseconds = int((self.elapsed_time * 1000) % 1000)
 
         return {
             'minutes': minutes,
