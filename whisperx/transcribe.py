@@ -22,6 +22,7 @@ class Timer:
     def __init__(self):
         self.start_time = None
         self.end_time = None
+        self.elapsed_time = None
 
     def start(self, message=""):
         """Start the timer."""
@@ -36,17 +37,17 @@ class Timer:
         if self.start_time is None:
             raise ValueError("Timer has not been started.")
         self.end_time = time.time()
+        self.elapsed_time = self.end_time - self.start_time
 
         self.display_elapsed(message)
 
-    def elapsed_time(self):
+    def elapsed_time_dict(self):
         """Calculate and return the elapsed time in minutes, seconds, and milliseconds."""
         if self.start_time is None:
             raise ValueError("Timer has not been started.")
         if self.end_time is None:
             raise ValueError("Timer has not been stopped.")
 
-        elapsed_time = self.end_time - self.start_time
         minutes = int(elapsed_time // 60)
         seconds = int(elapsed_time % 60)
         milliseconds = int((elapsed_time * 1000) % 1000)
@@ -59,7 +60,7 @@ class Timer:
 
     def display_elapsed(self, message):
         """Display the elapsed time."""
-        elapsed = self.elapsed_time()
+        elapsed = self.elapsed_time_dict()
         print(f"{message} {elapsed['minutes']}:{elapsed['seconds']}.{elapsed['milliseconds']}s")
 
 
